@@ -1,13 +1,24 @@
 from django.db import models
 from django.utils import timezone
+import uuid
+
+
+class Author(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    name = models.CharField(max_length=50)
+    email = models.EmailField()
+
+    def __unicode__ (self):
+        return self.name
 
 
 class Article(models.Model):
     title = models.CharField(max_length=100)
-    created_date = models.DateTimeField(default=timezone.now())
+    created_date = models.DateTimeField(default=timezone.now)
     text = models.TextField()
     published_date = models.DateTimeField(
             blank=True, null=True)
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
 
     def publish(self):
         self.published_date = timezone.now()
@@ -16,5 +27,12 @@ class Article(models.Model):
     def remove(self):
         self.delete()
 
-    def __str__(self):
+    def __unicode__(self):
         return '{} {}'.format(self.title, self.created_date)
+
+
+class Comment(models.Model):
+    text = models.TextField()
+    author = models.ForeignKey(Author, on_delete=models.CASCADE)
+    article = models.ForeignKey(Article, on_delete=models.CASCADE)
+    published_date = models.DateTimeField(default=timezone.now)
